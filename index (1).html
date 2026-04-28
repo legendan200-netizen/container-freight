@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>컨테이너 운반비 견적</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;font-size:14px;}
+.hdr{background:#1e3a5f;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-title{font-size:17px;font-weight:700;}
+.hdr-sub{font-size:11px;opacity:.7;}
+.tabs{background:#fff;border-bottom:2px solid #dce2ef;display:flex;padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.07);}
+.tab{padding:13px 18px;font-size:13px;font-weight:600;color:#888;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;font-family:inherit;}
+.tab.on{color:#1e3a5f;border-bottom-color:#1e3a5f;}
+.panel{display:none;max-width:900px;margin:0 auto;padding:20px;}
+.panel.on{display:block;}
+.card{background:#fff;border-radius:10px;border:1px solid #dce2ef;margin-bottom:14px;}
+.card-head{font-size:12px;font-weight:700;color:#1e3a5f;padding:11px 18px;border-bottom:1px solid #dce2ef;background:#f7f9fc;border-radius:10px 10px 0 0;letter-spacing:.5px;}
+.card-body{padding:18px;}
+.row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.row:last-child{margin-bottom:0;}
+.col{flex:1;min-width:150px;}
+label{display:block;font-size:11px;font-weight:700;color:#666;margin-bottom:5px;}
+select,input[type=number],input[type=text]{width:100%;border:1.5px solid #dce2ef;border-radius:7px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#1a1a2e;transition:border .15s;}
+select:focus,input:focus{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.1);}
+select:disabled{background:#f5f6fa;color:#bbb;cursor:not-allowed;}
+.tg{display:flex;gap:6px;flex-wrap:wrap;}
+.tg-btn{padding:8px 16px;border:1.5px solid #dce2ef;border-radius:7px;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
+.tg-btn.on{background:#1e3a5f;border-color:#1e3a5f;color:#fff;}
+.addr-card{background:#1e3a5f;border-radius:10px;padding:20px;margin-bottom:14px;color:#fff;}
+.addr-card-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.addr-card-sub{font-size:12px;opacity:.8;margin-bottom:14px;}
+.addr-btn{width:100%;padding:14px;background:#f0c30f;border:none;border-radius:8px;font-size:15px;font-weight:700;color:#1e3a5f;cursor:pointer;font-family:inherit;}
+.addr-btn:disabled{opacity:.4;cursor:not-allowed;background:#aaa;color:#fff;}
+.addr-result-bar{display:none;margin-top:12px;padding:11px 14px;background:rgba(255,255,255,.15);border-radius:8px;font-size:13px;align-items:center;justify-content:space-between;gap:10px;}
+.addr-result-bar.on{display:flex;}
+.addr-change{padding:5px 12px;border:1.5px solid rgba(255,255,255,.7);border-radius:6px;background:transparent;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.banner{font-size:12px;padding:7px 12px;border-radius:6px;margin-top:6px;display:none;}
+.banner.green{background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32;display:block;}
+.banner.amber{background:#fff8e1;border:1px solid #ffe082;color:#b35900;display:block;}
+.oway-box{display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:14px;margin-bottom:14px;}
+.ret-box{display:none;margin-top:10px;padding:10px;background:#fff3e0;border:1px solid #ffcc80;border-radius:7px;}
+.sur-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sur{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid #dce2ef;border-radius:8px;cursor:pointer;user-select:none;transition:all .15s;}
+.sur:hover{border-color:#1e3a5f;background:#f7f9fc;}
+.sur.on{border-color:#1e3a5f;background:#edf2fa;}
+.sur-cb{width:16px;height:16px;border:2px solid #ccc;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;}
+.sur.on .sur-cb{background:#1e3a5f;border-color:#1e3a5f;}
+.sur-label{flex:1;font-size:12px;font-weight:500;}
+.sur-rate{font-size:11px;font-weight:700;color:#d35400;white-space:nowrap;}
+.sec{font-size:11px;font-weight:700;color:#888;padding:10px 0 6px;border-bottom:1px solid #f0f2f5;margin-bottom:8px;letter-spacing:.5px;}
+.qty{display:flex;align-items:center;gap:6px;}
+.qty-btn{width:36px;height:36px;border:1.5px solid #dce2ef;border-radius:7px;background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#444;}
+.qty-btn:hover{border-color:#1e3a5f;color:#1e3a5f;}
+.calc-btn{width:100%;padding:14px;background:#1e3a5f;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.calc-btn:disabled{opacity:.3;cursor:not-allowed;}
+.result{display:none;background:#fff;border-radius:10px;border:2px solid #1e3a5f;margin-bottom:14px;overflow:hidden;}
+.result.on{display:block;}
+.res-hdr{background:#1e3a5f;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;}
+.res-hdr h3{font-size:15px;font-weight:700;}
+.res-hdr p{font-size:12px;opacity:.75;margin-top:3px;}
+.res-dist strong{font-size:26px;color:#f0c30f;display:block;text-align:right;}
+.res-dist span{font-size:11px;opacity:.8;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px;background:#f0f4f9;border-bottom:1px solid #dce2ef;}
+.chip{font-size:11px;padding:3px 10px;border-radius:20px;background:#dce8fb;color:#1e3a5f;font-weight:600;}
+.chip.w{background:#fff3cd;color:#856404;}
+.chip.g{background:#d1e7dd;color:#0a3622;}
+table.ft{width:100%;border-collapse:collapse;}
+.ft th{padding:9px 20px;font-size:11px;font-weight:700;color:#888;background:#f7f9fc;border-bottom:1px solid #dce2ef;text-align:left;}
+.ft th:last-child{text-align:right;}
+.ft td{padding:11px 20px;border-bottom:1px solid #f0f2f5;font-size:13px;}
+.ft td:last-child{text-align:right;font-weight:600;}
+.ft tr.hi td{background:#edf2fa;color:#1e3a5f;}
+.ft tr.hi td:last-child{font-size:15px;font-weight:700;}
+.ft tr.sr td{color:#d35400;}
+.ft tr.tt td{background:#1e3a5f;color:#fff;font-weight:700;}
+.tot{padding:16px 20px;background:#edf2fa;display:flex;justify-content:space-between;align-items:center;border-top:2px solid #1e3a5f;}
+.tot strong{font-size:28px;font-weight:700;color:#1e3a5f;}
+.actions{display:flex;gap:8px;padding:12px 20px;border-top:1px solid #dce2ef;}
+.actions button{flex:1;padding:10px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-print{border:1.5px solid #1e3a5f;background:#fff;color:#1e3a5f;}
+.btn-reset{border:1.5px solid #dce2ef;background:#fff;color:#888;}
+.dist-res{background:#edf2fa;border:1px solid #1e3a5f;border-radius:8px;padding:14px 18px;margin-top:12px;display:none;}
+.dist-res.on{display:block;}
+.d-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #dce2ef;font-size:13px;}
+.d-row:last-child{border:none;}
+.cmp-tot{background:#1e3a5f;color:#fff;border-radius:8px;padding:16px 20px;margin-top:14px;display:none;}
+.cmp-tot.on{display:block;}
+.cmp-amt{font-size:28px;font-weight:700;color:#f0c30f;}
+.addr-result{padding:12px 16px;border-bottom:1px solid #f0f2f5;cursor:pointer;transition:background .1s;}
+.addr-result:hover{background:#f0f4f9;}
+.addr-result:last-child{border:none;}
+.addr-result-name{font-size:13px;font-weight:600;color:#1e3a5f;}
+.addr-result-sub{font-size:11px;color:#888;margin-top:2px;}
+.addr-no-result{padding:20px;text-align:center;color:#888;font-size:13px;}
+@media(max-width:580px){.sur-grid{grid-template-columns:1fr;}.row{flex-direction:column;}.col{min-width:0;}}
+@media print{.tabs,.addr-card,.calc-btn,.actions{display:none!important;}.result.on{display:block!important;}body{background:#fff;}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-title">🚢 컨테이너 운반비 견적 시스템</div>
+  <div class="hdr-sub">2026 안전운임 고시 기준 | 14개 항만/ICD | 3,479개 행정동</div>
+</div>
+<div class="tabs">
+  <button class="tab on" onclick="goTab('port',this)">기점별 견적</button>
+  <button class="tab" onclick="goTab('dist',this)">거리별 견적</button>
+  <button class="tab" onclick="goTab('cmp',this)">복합 견적</button>
+  <button class="tab" onclick="goTab('wait',this)">대기시간 확인서</button>
+</div>
+<div class="panel on" id="p-port">
+  <div class="addr-card">
+    <div class="addr-card-title">🔍 주소 검색 → 운반비 자동 계산</div>
+    <div class="addr-card-sub">동네이름·도로명·건물명을 입력하면 행정동이 자동으로 찾아집니다</div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="addrInput" placeholder="예: 안중읍, 안중초롱길22, 역삼동, 해운대구, 평택시 안중" style="flex:1;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;padding:13px 16px;font-size:14px;font-family:inherit;background:rgba(255,255,255,.15);color:#fff;outline:none;" oninput="onAddrInput(this.value)" onkeydown="if(event.key==='Enter')doAddrSearch()" disabled id="addrInput">
+      <button class="addr-btn" id="addrBtn" onclick="doAddrSearch()" disabled style="width:auto;padding:13px 20px;flex-shrink:0;">검색</button>
+    </div>
+    <div id="addrDropdown" style="display:none;margin-top:8px;background:#fff;border-radius:8px;overflow:hidden;max-height:280px;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.2);"></div>
+    <div class="addr-result-bar" id="addrBar">
+      <span id="addrText"></span>
+      <button class="addr-change" onclick="clearAddr()">변경</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">기본 설정</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col" style="flex:2"><label>기간</label><select style="background:#fff8e1;color:#856404;font-weight:600;"><option>2026년 2월 1일 ~ 진행중 (운영지침 4월12일 버전)</option></select></div>
+        <div class="col"><label>유형</label><select id="feeType"><option value="1">⇒ 운수사업자간운임</option><option value="0">⇒ 안전위탁운임</option><option value="2">⇒ 안전운송운임</option></select></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>기점 <span style="color:#d35400;">*필수</span></label><select id="portSel" onchange="onPort()"><option value="">-- 기점 선택 --</option></select><div class="banner" id="portBn"></div></div>
+        <div class="col"><label>규격</label><div class="tg" id="ctGrp"><button class="tg-btn on" onclick="setCT('40ft',this)">40FT</button><button class="tg-btn" onclick="setCT('20ft',this)">20FT</button><button class="tg-btn" onclick="setCT('45ft',this)">45FT</button></div></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>시/도</label><select id="sidoSel" disabled onchange="onSido()"><option value="">선택</option></select></div>
+        <div class="col"><label>시/군/구</label><select id="sgSel" disabled onchange="onSg()"><option value="">선택</option></select></div>
+        <div class="col"><label>행정동</label><select id="dongSel" disabled onchange="chkBtn()"><option value="">선택</option></select></div>
+      </div>
+    </div>
+  </div>
+  <div class="oway-box" id="owayBox">
+    <label style="font-size:12px;font-weight:700;color:#b35900;display:block;margin-bottom:8px;">운송 방식 (부대조항 9조)</label>
+    <div class="tg"><button class="tg-btn on" id="bRt" onclick="setOway(false,this)">왕복</button><button class="tg-btn" id="bOw" onclick="setOway(true,this)">편도 (의왕ICD)</button></div>
+    <div style="font-size:11px;color:#888;margin-top:6px;">수도권·춘천·홍천 화주공장 → 의왕ICD 반납 시 적용</div>
+    <div class="ret-box" id="retBox">
+      <label style="font-size:11px;font-weight:700;color:#e65100;display:block;margin-bottom:6px;">반납 장소</label>
+      <div class="tg"><button class="tg-btn on" id="bRI" onclick="setRet(false,this)">의왕ICD 반납</button><button class="tg-btn" id="bRInch" onclick="setRet(true,this)">인천터미널 반납 (+40,000원)</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">할증 및 수량</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col"><label>수량 (개)</label><div class="qty"><button class="qty-btn" onclick="chgQ(-1)">−</button><input type="number" id="qtyI" value="1" min="1" max="99" style="text-align:center;font-weight:700;font-size:16px;"><button class="qty-btn" onclick="chgQ(1)">+</button></div></div>
+        <div class="col"><label>화물 중량 (내품, 톤)</label><input type="number" id="wtI" placeholder="중량 할증 자동 계산" min="0" step="0.5"></div>
+      </div>
+      <div class="sec">COMBINE 운송</div>
+      <div class="tg"><button class="tg-btn" id="cmbBtn" onclick="togCmb(this)">COMBINE 운송 적용 (동일화주 180%)</button></div>
+      <div class="sec" style="margin-top:14px;">특수 컨테이너 할증</div>
+      <div class="sur-grid">
+        <div class="sur" data-n="플렉시백" data-r="20" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">플렉시백 (액체20%|분말10%)</span></div>
+        <div class="sur" data-n="탱크" data-r="30" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">TANK 컨테이너(비위험물)</span><span class="sur-rate">30%</span></div>
+        <div class="sur" data-n="냉동냉장" data-r="30" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">냉동냉장 컨테이너</span><span class="sur-rate">30%</span></div>
+        <div class="sur" data-n="덤프" data-r="25" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">덤프 컨테이너</span><span class="sur-rate">25%</span></div>
+        <div class="sur" data-n="험로오지" data-r="20" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">험로 및 오지</span><span class="sur-rate">20%</span></div>
+        <div class="sur" data-n="통행제한" data-r="30" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">통행제한지역</span><span class="sur-rate">30%</span></div>
+        <div class="sur" data-n="공휴일" data-r="20" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">공휴일 운행</span><span class="sur-rate">20%</span></div>
+        <div class="sur" data-n="심야" data-r="20" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">심야(22:00~06:00)</span><span class="sur-rate">20%</span></div>
+      </div>
+      <div class="sec" style="margin-top:14px;">위험물 할증</div>
+      <div class="sur-grid">
+        <div class="sur" data-n="위험물" data-r="30" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">위험물·유독물·유해화학물질</span><span class="sur-rate">30%</span></div>
+        <div class="sur" data-n="화약류" data-r="100" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">화약류</span><span class="sur-rate">100%</span></div>
+        <div class="sur" data-n="방사성" data-r="200" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">방사성물질</span><span class="sur-rate">200%</span></div>
+      </div>
+      <div class="sec" style="margin-top:14px;">기타 고정비용</div>
+      <div class="sur-grid">
+        <div class="sur" data-n="검색대" data-r="F100000" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">검색대(X-RAY) 통과비용</span><span class="sur-rate">+100,000원</span></div>
+        <div class="sur" data-n="인천반납" data-r="F40000" onclick="togS(this)"><div class="sur-cb"></div><span class="sur-label">인천터미널 공컨 반납비(편도)</span><span class="sur-rate">+40,000원</span></div>
+      </div>
+    </div>
+  </div>
+  <button class="calc-btn" id="calcBtn" onclick="doCalc()" disabled>견적 계산하기</button>
+  <div class="result" id="resBox">
+    <div class="res-hdr"><div><h3 id="rRoute"></h3><p id="rAddr"></p></div><div class="res-dist"><strong id="rDist"></strong><span>왕복 구간거리 (km)</span></div></div>
+    <div class="chips" id="rChips"></div>
+    <table class="ft"><thead><tr><th>항목</th><th style="text-align:right">1개 기준 (원)</th></tr></thead><tbody id="rBody"></tbody></table>
+    <div class="tot"><div><div style="font-size:12px;color:#555;" id="rLbl">총 견적 금액</div><div style="font-size:11px;color:#888;margin-top:2px;" id="rNote"></div></div><strong id="rTotal"></strong></div>
+    <div class="actions"><button class="btn-print" onclick="window.print()">🖨 인쇄/PDF</button><button class="btn-reset" onclick="doReset()">↺ 초기화</button></div>
+  </div>
+</div>
+<div class="panel" id="p-dist">
+<div class="card"><div class="card-head">거리별 운임 조회</div><div class="card-body">
+  <div class="row"><div class="col"><label>구간거리 (km)</label><input type="number" id="dKm" min="1" max="550" placeholder="1~550" oninput="calcDist()"></div><div class="col"><label>규격</label><div class="tg"><button class="tg-btn on" id="d40" onclick="setDCT('40ft',this)">40FT</button><button class="tg-btn" id="d20" onclick="setDCT('20ft',this)">20FT</button><button class="tg-btn" id="d45" onclick="setDCT('45ft',this)">45FT</button></div></div></div>
+  <div class="row"><div class="col"><label>기점 할증</label><select id="dSur" onchange="calcDist()"><option value="0">없음</option><option value="20">인천기점 +20%</option><option value="18">평택기점 +18%</option></select></div><div class="col"><label>수량</label><div class="qty"><button class="qty-btn" onclick="chgDQ(-1)">−</button><input type="number" id="dQ" value="1" min="1" max="99" oninput="calcDist()"><button class="qty-btn" onclick="chgDQ(1)">+</button></div></div></div>
+</div></div>
+<div class="dist-res" id="distRes"></div>
+</div>
+<div class="panel" id="p-cmp">
+<div class="card"><div class="card-head">운반비 기준</div><div class="card-body">
+  <div class="row"><div class="col"><label>산출 방식</label><div class="tg"><button class="tg-btn on" id="cmP" onclick="setCmpM('port',this)">기점별</button><button class="tg-btn" id="cmD" onclick="setCmpM('dist',this)">거리별</button></div></div><div class="col"><label>규격</label><div class="tg"><button class="tg-btn on" id="cm40" onclick="setCmpCT('40ft',this)">40FT</button><button class="tg-btn" id="cm20" onclick="setCmpCT('20ft',this)">20FT</button><button class="tg-btn" id="cm45" onclick="setCmpCT('45ft',this)">45FT</button></div></div></div>
+  <div id="cmpPI"><div class="row"><div class="col"><label>기점</label><select id="cmpPort" onchange="onCmpP()"><option value="">선택</option></select></div><div class="col"><label>시/도</label><select id="cmpSido" disabled onchange="onCmpSido()"><option value="">선택</option></select></div><div class="col"><label>시/군/구</label><select id="cmpSg" disabled onchange="onCmpSg()"><option value="">선택</option></select></div><div class="col"><label>행정동</label><select id="cmpDong" disabled onchange="calcCmp()"><option value="">선택</option></select></div></div></div>
+  <div id="cmpDI" style="display:none;"><div class="row"><div class="col"><label>구간거리 (km)</label><input type="number" id="cmpKm" min="1" max="550" oninput="calcCmp()"></div><div class="col"><label>기점 할증</label><select id="cmpPS" onchange="calcCmp()"><option value="0">없음</option><option value="20">인천+20%</option><option value="18">평택+18%</option></select></div></div></div>
+  <div class="row" style="margin-top:6px;"><div class="col"><label>운임 유형</label><select id="cmpFt" onchange="calcCmp()"><option value="1">운수사업자간운임</option><option value="0">안전위탁운임</option><option value="2">안전운송운임</option></select></div><div class="col"><label>수량</label><div class="qty"><button class="qty-btn" onclick="chgCQ(-1)">−</button><input type="number" id="cmpQ" value="1" min="1" max="99" oninput="calcCmp()"><button class="qty-btn" onclick="chgCQ(1)">+</button></div></div></div>
+</div></div>
+<div class="card"><div class="card-head">고정비용</div><div class="card-body">
+  <div class="sur-grid">
+    <div class="sur" onclick="togCF(this,'rail')"><div class="sur-cb"></div><span class="sur-label">철송 운송비</span><span class="sur-rate" id="railAmt">40FT 400,000원</span></div>
+    <div class="sur" onclick="togCF(this,'thc')"><div class="sur-cb"></div><span class="sur-label">THC (터미널 화물처리비)</span><input type="number" id="fThc" placeholder="금액" style="width:80px;padding:4px 8px;font-size:12px;border:1px solid #dce2ef;border-radius:4px;" oninput="calcCmp()" onclick="event.stopPropagation()"></div>
+    <div class="sur" onclick="togCF(this,'doc')"><div class="sur-cb"></div><span class="sur-label">통관료 / 서류비</span><input type="number" id="fDoc" placeholder="금액" style="width:80px;padding:4px 8px;font-size:12px;border:1px solid #dce2ef;border-radius:4px;" oninput="calcCmp()" onclick="event.stopPropagation()"></div>
+    <div class="sur" onclick="togCF(this,'etc')"><div class="sur-cb"></div><span class="sur-label">기타 비용</span><input type="number" id="fEtc" placeholder="금액" style="width:80px;padding:4px 8px;font-size:12px;border:1px solid #dce2ef;border-radius:4px;" oninput="calcCmp()" onclick="event.stopPropagation()"></div>
+  </div>
+</div></div>
+<div class="cmp-tot" id="cmpTot"><div style="font-size:11px;opacity:.8;margin-bottom:4px;">복합 견적 합계 (VAT 별도)</div><div class="cmp-amt" id="cmpAmt"></div><div style="font-size:12px;opacity:.7;margin-top:4px;" id="cmpInfo"></div></div>
+</div>
+<div class="panel" id="p-wait">
+<div class="card"><div class="card-head">컨테이너 대기시간 확인서</div><div class="card-body">
+  <div class="row"><div class="col" style="flex:2"><label>출입 사업장 명칭</label><input type="text" id="wPl" placeholder="예: 부산신항 HMMPSA 터미널"></div><div class="col"><label>위치</label><input type="text" id="wAd"></div></div>
+  <div class="row"><div class="col"><label>컨테이너 번호</label><input type="text" id="wCn"></div><div class="col"><label>차량 번호</label><input type="text" id="wCa"></div><div class="col"><label>차주 성명</label><input type="text" id="wDr"></div><div class="col"><label>운수사 명</label><input type="text" id="wCo"></div></div>
+  <div class="row"><div class="col"><label>입차요청시각(화주)</label><input type="text" id="wRt" placeholder="2026년 월 일 시 분"></div><div class="col"><label>입차시각</label><input type="text" id="wIn" placeholder="2026년 월 일 시 분"></div><div class="col"><label>출차시각</label><input type="text" id="wOt" placeholder="2026년 월 일 시 분"></div></div>
+  <div class="row"><div class="col"><label>확인자 소속</label><input type="text" id="wOr"></div><div class="col"><label>확인자 성명</label><input type="text" id="wNm"></div><div class="col"><label>작성일</label><input type="text" id="wDt" placeholder="2026년 월 일"></div></div>
+  <button class="calc-btn" style="margin-top:8px;" onclick="printWait()">🖨 확인서 출력</button>
+</div></div>
+</div>
+<iframe id="pf" style="position:fixed;top:-9999px;width:1px;height:1px;border:none;" title="p"></iframe>
+
+<script src="data.js"></script>
+<script>
+// D, OD, DT는 data.js에서 로드됨
+var INCH=['\uc778\ucc9c\uc2e0\ud56d','\uc778\ucc9c\ud56d','\uc778\ucc9c\uad6d\uc81c\uc5ec\uac1d\ubd80\ub450'];
+var PTAEK=['\ud3c9\ud0dd\ud56d'];
+var OMAP={'\ubd80\uc0b0\uc2e0\ud56d':'\ubd80\uc0b0\uc2e0\ud56d\u21941\uc758\uc655ICD','\ubd80\uc0b0\ubd81\ud56d':'\ubd80\uc0b0\ubd81\ud56d\u21941\uc758\uc655ICD','\uad11\uc591\ud56d':'\uad11\uc591\ud56d\u21941\uc758\uc655ICD'};
+var FN=['\uc548\uc804\uc704\ud0c1\uc6b4\uc784','\uc6b4\uc218\uc0ac\uc5c5\uc790 \uac04 \uc6b4\uc784','\uc548\uc804\uc6b4\uc1a1\uc6b4\uc784'];
+var CT='40ft',CP=null,isOway=false,retInch=false,sSur=[],isCmb=false;
+var dCT='40ft',cmpCT='40ft',cmpM='port',cmpF={rail:false,thc:false,doc:false,etc:false};
+var lastAddr='';
+
+function goTab(id,el){document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});el.classList.add('on');document.getElementById('p-'+id).classList.add('on');}
+
+(function(){
+  var ps=document.getElementById('portSel'),cp=document.getElementById('cmpPort');
+  Object.keys(D).sort().forEach(function(p){
+    var lbl=p+(INCH.includes(p)?' (\ud560\uc99d+20%\ud3ec\ud568)':PTAEK.includes(p)?' (\ud560\uc99d+18%\ud3ec\ud568)':'');
+    ps.add(new Option(lbl,p));cp.add(new Option(p,p));
+  });
+})();
+
+function onPort(){
+  CP=document.getElementById('portSel').value||null;
+  isOway=false;retInch=false;
+  var bn=document.getElementById('portBn');
+  if(INCH.includes(CP)){bn.textContent='\u2713 \uc778\ucc9c\uae30\uc810 \ud560\uc99d +20% \uc774\ubbf8 \ud3ec\ud568';bn.className='banner green';}
+  else if(PTAEK.includes(CP)){bn.textContent='\u2713 \ud3c9\ud0dd\uae30\uc810 \ud560\uc99d +18% \uc774\ubbf8 \ud3ec\ud568';bn.className='banner amber';}
+  else{bn.className='banner';}
+  document.getElementById('owayBox').style.display=CP&&OMAP[CP]?'block':'none';
+  document.getElementById('bRt').classList.add('on');document.getElementById('bOw').classList.remove('on');
+  document.getElementById('retBox').style.display='none';
+  // 주소입력창 활성화
+  document.getElementById('addrInput').disabled=!CP;
+  document.getElementById('addrBtn').disabled=!CP;
+  document.getElementById('addrInput').placeholder=CP?'\uc608: \uc548\uc911\uc74d, \uc548\uc911\ucd08\ub871\uae3822, \uc5ed\uc0bc\ub3d9, \ud574\uc6b4\ub300\uad6c, \ud3c9\ud0dd\uc2dc \uc548\uc911':'\uae30\uc810\uc744 \uba3c\uc800 \uc120\ud0dd\ud574\uc8fc\uc138\uc694';
+  document.getElementById('addrDropdown').style.display='none';
+  clearAddr();
+  loadSido();lastAddr='';
+  document.getElementById('addrBar').classList.remove('on');
+  document.getElementById('resBox').classList.remove('on');
+  chkBtn();
+}
+
+// ── 카카오 주소검색 API (법정동→행정동 자동 변환) ──
+var KAKAO_KEY='afb3dc1b4837efa16dd2d4628e27e133';
+var SIDO={'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시','경기':'경기도','강원':'강원특별자치도','충북':'충청북도','충남':'충청남도','전북':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도','제주':'제주특별자치도'};
+
+var searchTimer=null;
+function onAddrInput(v){
+  clearTimeout(searchTimer);
+  var dd=document.getElementById('addrDropdown');
+  if(v.trim().length<2){dd.style.display='none';return;}
+  searchTimer=setTimeout(function(){doAddrSearch();},400);
+}
+
+function doAddrSearch(){
+  var q=document.getElementById('addrInput').value.trim();
+  if(!q||!CP)return;
+  var dd=document.getElementById('addrDropdown');
+  dd.innerHTML='<div class="addr-no-result">검색 중...</div>';
+  dd.style.display='block';
+
+  // 카카오 주소검색 API - 법정동/도로명 모두 지원
+  fetch('https://dapi.kakao.com/v2/local/search/address.json?query='+encodeURIComponent(q)+'&analyze_type=similar&size=10',{
+    headers:{'Authorization':'KakaoAK '+KAKAO_KEY}
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var docs=data.documents||[];
+    if(!docs.length){
+      // 키워드 검색으로 폴백
+      return fetch('https://dapi.kakao.com/v2/local/search/keyword.json?query='+encodeURIComponent(q)+'&size=10',{
+        headers:{'Authorization':'KakaoAK '+KAKAO_KEY}
+      }).then(function(r){return r.json();});
+    }
+    return {documents:docs, _isAddr:true};
+  })
+  .then(function(data){
+    var docs=data.documents||[];
+    if(!docs.length){
+      showLocalSearch(q); // 자체 DB 검색으로 폴백
+      return;
+    }
+    var results=[];
+    var seen={};
+    docs.forEach(function(doc){
+      var addr=doc.address||doc.road_address||{};
+      var sido1=addr.region_1depth_name||doc.address_name||'';
+      var sg=addr.region_2depth_name||'';
+      var hname=addr.region_3depth_h_name||''; // 행정동명!
+      var bname=addr.region_3depth_name||'';   // 법정동명
+      var sidoFull=SIDO[sido1]||sido1;
+      // 행정동으로 우리 DB 매핑
+      var found=matchDong(sidoFull,sg,hname,bname);
+      if(found){
+        var key=found.sido+'|'+found.sg+'|'+found.dong;
+        if(!seen[key]){
+          seen[key]=true;
+          results.push({sido:found.sido,sg:found.sg,dong:found.dong,
+            label:doc.address_name||doc.place_name||q});
+        }
+      }
+    });
+    if(!results.length){showLocalSearch(q);return;}
+    showDropdown(results);
+  })
+  .catch(function(){showLocalSearch(q);});
+}
+
+function matchDong(sidoFull,sigungu,hname,bname){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  if(!src)return null;
+  function nd(s){return(s||'').replace(/[0-9]+/g,'').replace(/[동읍면리]$/,'').trim();}
+  var fSido=null;
+  for(var s in src){if(s===sidoFull||(sidoFull&&s.indexOf(sidoFull.replace(/특별시|광역시|특별자치시|특별자치도|도$/,''))>=0)){fSido=s;break;}}
+  if(!fSido)return null;
+  var fSg=null;
+  if(src[fSido][sigungu]){fSg=sigungu;}
+  else{var sn=sigungu.replace(/[시군구]$/,'');for(var k in src[fSido]){if(k.replace(/[시군구]$/,'')=== sn){fSg=k;break;}}}
+  if(!fSg)return null;
+  var dD=src[fSido][fSg];
+  var fDong=null;
+  // hname(행정동) 우선
+  if(hname&&dD[hname]){fDong=hname;}
+  if(!fDong&&hname){var h=nd(hname);for(var k in dD){if(nd(k)===h){fDong=k;break;}}}
+  if(!fDong&&hname){var h=nd(hname);for(var k in dD){if(h.length>=2&&nd(k).startsWith(h)){fDong=k;break;}}}
+  // bname(법정동) 폴백
+  if(!fDong&&bname&&dD[bname]){fDong=bname;}
+  if(!fDong&&bname){var b=nd(bname);for(var k in dD){if(nd(k)===b){fDong=k;break;}}}
+  if(!fDong&&bname){var b=nd(bname);for(var k in dD){if(b.length>=2&&nd(k).startsWith(b)){fDong=k;break;}}}
+  return fDong?{sido:fSido,sg:fSg,dong:fDong}:null;
+}
+
+// 자체 DB 검색 (카카오 실패 시 폴백)
+function showLocalSearch(q){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  var results=[],seen={};
+  function nq(s){return(s||'').replace(/특별시|광역시|특별자치시|특별자치도|도$|시$|군$|구$/g,'').replace(/\s/g,'').trim();}
+  function nd(s){return(s||'').replace(/[0-9]+/g,'').replace(/동$|읍$|면$|리$/,'').trim();}
+  var qn=nq(q);
+  for(var sido in src){var sn=nq(sido);for(var sg in src[sido]){var sgn=nq(sg);for(var dong in src[sido][sg]){var dn=nd(dong);var key=sido+'|'+sg+'|'+dong;if(seen[key])continue;var sc=0;if(dong===q||dn===nd(q))sc=10;else if(dn.startsWith(nd(q))&&nd(q).length>=2)sc=8;else if(sg===q||sgn===qn)sc=6;else if(sgn.startsWith(qn)&&qn.length>=2)sc=5;else if(dn.indexOf(qn)>=0&&qn.length>=2)sc=3;else if(sgn.indexOf(qn)>=0&&qn.length>=2)sc=2;if(sc>0){seen[key]=true;results.push({sido:sido,sg:sg,dong:dong,score:sc,label:sido+' '+sg+' '+dong});}}}}
+  results.sort(function(a,b){return b.score-a.score;});
+  if(!results.length){
+    var dd=document.getElementById('addrDropdown');
+    dd.innerHTML='<div class="addr-no-result">검색 결과가 없습니다.<br><small>예: 안중읍, 역삼동, 해운대구, 평택시</small></div>';
+    dd.style.display='block';
+    return;
+  }
+  showDropdown(results.slice(0,10));
+}
+
+function showDropdown(results){
+  var dd=document.getElementById('addrDropdown');
+  var html='';
+  results.forEach(function(r){
+    html+='<div class="addr-result" data-sido="'+r.sido+'" data-sg="'+r.sg+'" data-dong="'+r.dong+'" data-full="'+(r.label||r.sido+' '+r.sg+' '+r.dong)+'" onclick="selectResult(this)">';
+    html+='<div class="addr-result-name">'+r.dong+'</div>';
+    html+='<div class="addr-result-sub">'+r.sido+' '+r.sg+(r.label&&r.label!==r.sido+' '+r.sg+' '+r.dong?' | '+r.label:'')+'</div>';
+    html+='</div>';
+  });
+  dd.innerHTML=html;
+  dd.style.display='block';
+}
+
+function selectResult(el){
+  var sido=el.dataset.sido,sg=el.dataset.sg,dong=el.dataset.dong,full=el.dataset.full;
+  document.getElementById('addrDropdown').style.display='none';
+  document.getElementById('addrInput').value=sido+' '+sg+' '+dong;
+  applyDong(sido,sg,dong,full);
+}
+function clearAddr(){
+  document.getElementById('addrInput').value='';
+  document.getElementById('addrDropdown').style.display='none';
+  document.getElementById('addrBar').classList.remove('on');
+  lastAddr='';
+}
+
+// 드롭다운 외부 클릭 시 닫기
+document.addEventListener('click',function(e){
+  var dd=document.getElementById('addrDropdown');
+  var inp=document.getElementById('addrInput');
+  if(dd&&inp&&!dd.contains(e.target)&&e.target!==inp){
+    dd.style.display='none';
+  }
+});
+
+function applyDong(sido,sg,dong,addrLabel){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  if(!src[sido]||!src[sido][sg]||!src[sido][sg][dong]){
+    alert('\ub370\uc774\ud130\ub97c \ucc3e\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4: '+sido+' '+sg+' '+dong);return;
+  }
+  // 시도 채우기
+  var ss=document.getElementById('sidoSel');
+  ss.innerHTML='<option value="">\uc120\ud0dd</option>';ss.disabled=false;
+  Object.keys(src).sort().forEach(function(s){var o=new Option(s,s);if(s===sido)o.selected=true;ss.add(o);});
+  // 시군구 채우기
+  var gs=document.getElementById('sgSel');
+  gs.innerHTML='<option value="">\uc120\ud0dd</option>';gs.disabled=false;
+  Object.keys(src[sido]).sort().forEach(function(s){var o=new Option(s,s);if(s===sg)o.selected=true;gs.add(o);});
+  // 행정동 채우기
+  var ds=document.getElementById('dongSel');
+  ds.innerHTML='<option value="">\uc120\ud0dd</option>';ds.disabled=false;
+  Object.keys(src[sido][sg]).sort().forEach(function(s){var o=new Option(s,s);if(s===dong)o.selected=true;ds.add(o);});
+  // 주소바 표시
+  lastAddr=addrLabel||'';
+  document.getElementById('addrText').textContent='\u2713 '+lastAddr;
+  document.getElementById('addrBar').classList.add('on');
+  document.getElementById('calcBtn').disabled=false;
+  // 즉시 계산!
+  doCalc();
+}
+
+function loadSido(){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  var ss=document.getElementById('sidoSel');
+  ss.innerHTML='<option value="">\uc120\ud0dd</option>';ss.disabled=!CP;
+  document.getElementById('sgSel').innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById('sgSel').disabled=true;
+  document.getElementById('dongSel').innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById('dongSel').disabled=true;
+  if(!CP||!src)return;
+  Object.keys(src).sort().forEach(function(s){ss.add(new Option(s,s));});
+}
+function onSido(){
+  var sido=document.getElementById('sidoSel').value,gs=document.getElementById('sgSel');
+  gs.innerHTML='<option value="">\uc120\ud0dd</option>';gs.disabled=!sido;
+  document.getElementById('dongSel').innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById('dongSel').disabled=true;
+  if(!sido||!CP)return;
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  Object.keys(src[sido]||{}).sort().forEach(function(s){gs.add(new Option(s,s));});
+  chkBtn();
+}
+function onSg(){
+  var sido=document.getElementById('sidoSel').value,sg=document.getElementById('sgSel').value,ds=document.getElementById('dongSel');
+  ds.innerHTML='<option value="">\uc120\ud0dd</option>';ds.disabled=!sg;
+  if(!sg||!sido||!CP)return;
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  Object.keys((src[sido]||{})[sg]||{}).sort().forEach(function(d){ds.add(new Option(d,d));});
+  chkBtn();
+}
+function setCT(t,btn){CT=t;document.getElementById('ctGrp').querySelectorAll('.tg-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+function setOway(v,btn){isOway=v;document.querySelectorAll('#owayBox .tg-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.getElementById('retBox').style.display=v?'block':'none';if(!v){retInch=false;document.getElementById('bRI').classList.add('on');document.getElementById('bRInch').classList.remove('on');}loadSido();chkBtn();}
+function setRet(v,btn){retInch=v;document.querySelectorAll('#retBox .tg-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+function chgQ(d){var i=document.getElementById('qtyI');i.value=Math.max(1,Math.min(99,(parseInt(i.value)||1)+d));}
+function togCmb(btn){isCmb=!isCmb;btn.classList.toggle('on',isCmb);}
+function togS(el){el.classList.toggle('on');var cb=el.querySelector('.sur-cb'),n=el.dataset.n,r=el.dataset.r;if(el.classList.contains('on')){cb.textContent='\u2713';sSur.push({n:n,r:r});}else{cb.textContent='';sSur=sSur.filter(function(s){return s.n!==n;});}}
+function chkBtn(){var ok=CP&&document.getElementById('sidoSel').value&&document.getElementById('sgSel').value&&document.getElementById('dongSel').value;document.getElementById('calcBtn').disabled=!ok;}
+
+function doCalc(){
+  var sido=document.getElementById('sidoSel').value,sg=document.getElementById('sgSel').value,dong=document.getElementById('dongSel').value;
+  var ft=parseInt(document.getElementById('feeType').value),qty=parseInt(document.getElementById('qtyI').value)||1,wt=parseFloat(document.getElementById('wtI').value)||0;
+  if(!sido||!sg||!dong)return;
+  try{
+    var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+    var row=src[sido][sg][dong],dist=row[0],off=CT==='20ft'?4:1;
+    var fees=[row[off],row[off+1],row[off+2]];
+    if(CT==='45ft')fees=fees.map(function(f){return Math.round(f*1.125/10)*10;});
+    var bm=isCmb&&CT==='20ft'?1.8:1,base=Math.round(fees[ft]*bm/10)*10;
+    var wThr=CT==='20ft'?20:23,wPct=wt>wThr?Math.floor(wt-wThr)*10:0;
+    var pSur=[],fSur=[];
+    sSur.forEach(function(s){if(String(s.r)[0]==='F')fSur.push({n:s.n,r:parseInt(s.r.slice(1))});else pSur.push({n:s.n,r:parseInt(s.r)});});
+    if(wPct>0)pSur.push({n:'\uc911\ub7c9\ubb3c',r:wPct});
+    pSur.sort(function(a,b){return b.r-a.r;});
+    var addPct=0;
+    if(pSur.length>=1)addPct+=pSur[0].r;if(pSur.length>=2)addPct+=pSur[1].r*0.5;if(pSur.length>=3)addPct+=pSur[2].r*0.5;
+    var final=Math.round(base*(1+addPct/100)/10)*10;
+    fSur.forEach(function(s){final+=s.r;});
+    if(isOway&&retInch)final+=40000;
+    var total=final*qty;
+    document.getElementById('rRoute').textContent=CP+' \u2192 '+sido+' '+sg+' '+dong;
+    document.getElementById('rAddr').textContent=lastAddr?'\uD83D\uDCCD '+lastAddr:'';
+    document.getElementById('rDist').textContent=dist.toLocaleString();
+    var chips=[];
+    chips.push('<span class="chip">'+CT.toUpperCase()+'</span>');
+    chips.push('<span class="chip '+(isOway?'w':'')+'">'+( isOway?'\ud3b8\ub3c4':'\uc655\ubcf5')+'</span>');
+    chips.push('<span class="chip">'+qty+'\uac1c</span>');
+    chips.push('<span class="chip">'+FN[ft]+'</span>');
+    if(INCH.includes(CP))chips.push('<span class="chip g">\uc778\ucc9c\ud560\uc99d+20%\ud3ec\ud568</span>');
+    if(PTAEK.includes(CP))chips.push('<span class="chip w">\ud3c9\ud0dd\ud560\uc99d+18%\ud3ec\ud568</span>');
+    if(isCmb)chips.push('<span class="chip w">COMBINE\xd7180%</span>');
+    if(wt>0)chips.push('<span class="chip w">'+wt+'\ud1a4</span>');
+    document.getElementById('rChips').innerHTML=chips.join('');
+    var tb=document.getElementById('rBody');tb.innerHTML='';
+    function ar(l,v,cl){var tr=document.createElement('tr');if(cl)tr.className=cl;tr.innerHTML='<td>'+l+'</td><td>'+(typeof v==='number'?v.toLocaleString()+' \uc6d0':v)+'</td>';tb.appendChild(tr);}
+    fees.forEach(function(f,i){var af=Math.round(f*bm/10)*10;ar(FN[i]+(CT==='45ft'?' (\xd7112.5%)':''),af,i===ft?'hi':'');});
+    pSur.forEach(function(s,i){ar(s.n+' \ud560\uc99d'+(i>0?' (\xd750%)':''),'+'+(i===0?s.r:Math.round(s.r*.5))+'%','sr');});
+    fSur.forEach(function(s){ar(s.n,s.r,'sr');});
+    if(isOway&&retInch)ar('\uc778\ucc9c\ud130\ubbf8\ub110 \ubc18\ub0a9 \ucd94\uac00\uae08',40000,'sr');
+    if(addPct>0||fSur.length||(isOway&&retInch))ar('\uc6b4\uc784 \ud569\uacc4 (\ud560\uc99d \ud3ec\ud568)',final,'tt');
+    document.getElementById('rLbl').textContent='\uc885 \uacac\uc801 ('+FN[ft]+') \u2014 '+qty+'\uac1c';
+    document.getElementById('rTotal').textContent=total.toLocaleString()+' \uc6d0';
+    document.getElementById('rNote').textContent=(qty>1?final.toLocaleString()+'\uc6d0 \xd7 '+qty+'\uac1c | ':'')+'VAT \ubcc4\ub3c4';
+    var rb=document.getElementById('resBox');rb.classList.add('on');
+    rb.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){alert('\uacc4\uc0b0 \uc624\ub958: '+e.message);}
+}
+
+function doReset(){
+  document.getElementById('resBox').classList.remove('on');
+  clearAddr();
+  document.getElementById('portSel').value='';onPort();
+  sSur=[];isCmb=false;
+  document.querySelectorAll('.sur.on').forEach(function(el){el.classList.remove('on');el.querySelector('.sur-cb').textContent='';});
+  document.getElementById('cmbBtn').classList.remove('on');
+  document.getElementById('qtyI').value=1;document.getElementById('wtI').value='';
+}
+function setDCT(t,btn){dCT=t;['d40','d20','d45'].forEach(function(id){document.getElementById(id).classList.remove('on');});btn.classList.add('on');calcDist();}
+function chgDQ(d){var i=document.getElementById('dQ');i.value=Math.max(1,Math.min(99,(parseInt(i.value)||1)+d));calcDist();}
+function findDR(km){var b=null;for(var i=0;i<DT.length;i++){if(DT[i][0]<=km)b=DT[i];else break;}return b;}
+function calcDist(){
+  var km=parseInt(document.getElementById('dKm').value)||0,qty=parseInt(document.getElementById('dQ').value)||1,ps=parseInt(document.getElementById('dSur').value)||0;
+  var el=document.getElementById('distRes');
+  if(km<1||km>550){el.classList.remove('on');return;}
+  var row=findDR(km);if(!row){el.classList.remove('on');return;}
+  var off=dCT==='20ft'?5:2;
+  var fees=[row[off],row[off+1],row[off+2]];
+  if(dCT==='45ft')fees=fees.map(function(f){return Math.round(f*1.125/10)*10;});
+  if(ps>0)fees=fees.map(function(f){return Math.round(f*(1+ps/100)/10)*10;});
+  el.classList.add('on');
+  el.innerHTML='<div style="font-size:12px;font-weight:600;color:#1e3a5f;margin-bottom:8px;">'+km+'km (\uc655\ubcf5 '+row[1]+'km) '+dCT.toUpperCase()+(ps>0?' | \uae30\uc810\ud560\uc99d+'+ps+'%':'')+' | '+qty+'\uac1c</div>'+fees.map(function(f,i){return '<div class="d-row"><span>'+FN[i]+'</span><span style="font-weight:700;color:#1e3a5f;">'+f.toLocaleString()+'\uc6d0 <small style="color:#888;font-weight:400;">\xd7'+qty+'\uac1c='+(f*qty).toLocaleString()+'\uc6d0</small></span></div>';}).join('');
+}
+function setCmpM(m,btn){cmpM=m;['cmP','cmD'].forEach(function(id){document.getElementById(id).classList.remove('on');});btn.classList.add('on');document.getElementById('cmpPI').style.display=m==='port'?'block':'none';document.getElementById('cmpDI').style.display=m==='dist'?'block':'none';calcCmp();}
+function setCmpCT(t,btn){cmpCT=t;['cm40','cm20','cm45'].forEach(function(id){document.getElementById(id).classList.remove('on');});btn.classList.add('on');document.getElementById('railAmt').textContent=(t==='20ft'?'20FT 300,000\uc6d0':'40FT 400,000\uc6d0');calcCmp();}
+function chgCQ(d){var i=document.getElementById('cmpQ');i.value=Math.max(1,Math.min(99,(parseInt(i.value)||1)+d));calcCmp();}
+function togCF(el,k){el.classList.toggle('on');el.querySelector('.sur-cb').textContent=el.classList.contains('on')?'\u2713':'';cmpF[k]=el.classList.contains('on');calcCmp();}
+function onCmpP(){var cp=document.getElementById('cmpPort').value;var ss=document.getElementById('cmpSido');ss.innerHTML='<option value="">\uc120\ud0dd</option>';['cmpSg','cmpDong'].forEach(function(id){document.getElementById(id).innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById(id).disabled=true;});ss.disabled=!cp;if(cp)Object.keys(D[cp]).sort().forEach(function(s){ss.add(new Option(s,s));});calcCmp();}
+function onCmpSido(){var cp=document.getElementById('cmpPort').value,sido=document.getElementById('cmpSido').value;var gs=document.getElementById('cmpSg');gs.innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById('cmpDong').innerHTML='<option value="">\uc120\ud0dd</option>';document.getElementById('cmpDong').disabled=true;gs.disabled=!sido;if(sido&&cp)Object.keys(D[cp][sido]).sort().forEach(function(s){gs.add(new Option(s,s));});calcCmp();}
+function onCmpSg(){var cp=document.getElementById('cmpPort').value,sido=document.getElementById('cmpSido').value,sg=document.getElementById('cmpSg').value;var ds=document.getElementById('cmpDong');ds.innerHTML='<option value="">\uc120\ud0dd</option>';ds.disabled=!sg;if(sg&&sido&&cp)Object.keys(D[cp][sido][sg]).sort().forEach(function(d){ds.add(new Option(d,d));});calcCmp();}
+function calcCmp(){
+  var ft=parseInt(document.getElementById('cmpFt').value),qty=parseInt(document.getElementById('cmpQ').value)||1,base=0,info='';
+  if(cmpM==='port'){
+    var cp=document.getElementById('cmpPort').value,sido=document.getElementById('cmpSido').value,sg=document.getElementById('cmpSg').value,dong=document.getElementById('cmpDong').value;
+    if(!cp||!sido||!sg||!dong){document.getElementById('cmpTot').classList.remove('on');return;}
+    try{var r=D[cp][sido][sg][dong];var off=cmpCT==='20ft'?4:1;base=r[off+ft];if(cmpCT==='45ft')base=Math.round(base*1.125/10)*10;info=cp+' \u2192 '+sg+' '+dong;}catch(e){return;}
+  }else{
+    var km=parseInt(document.getElementById('cmpKm').value)||0;if(!km){document.getElementById('cmpTot').classList.remove('on');return;}
+    var ps=parseInt(document.getElementById('cmpPS').value)||0,dr=findDR(km);if(!dr)return;
+    var off=cmpCT==='20ft'?5:2;base=dr[off+ft];
+    if(cmpCT==='45ft')base=Math.round(base*1.125/10)*10;if(ps>0)base=Math.round(base*(1+ps/100)/10)*10;info=km+'km \uad6c\uac04';
+  }
+  var rail=cmpF.rail?(cmpCT==='20ft'?300000:400000)*qty:0;
+  var thc=cmpF.thc?(parseInt(document.getElementById('fThc').value)||0)*qty:0;
+  var doc=cmpF.doc?(parseInt(document.getElementById('fDoc').value)||0)*qty:0;
+  var etc=cmpF.etc?(parseInt(document.getElementById('fEtc').value)||0)*qty:0;
+  var tr=base*qty,fx=rail+thc+doc+etc,gd=tr+fx;
+  document.getElementById('cmpAmt').textContent=gd.toLocaleString()+' \uc6d0';
+  document.getElementById('cmpInfo').textContent='\uc6b4\ubc18\ube44 '+tr.toLocaleString()+'\uc6d0 + \uace0\uc815\ube44 '+fx.toLocaleString()+'\uc6d0 | '+info+' | '+qty+'\uac1c | VAT\ubcc4\ub3c4';
+  document.getElementById('cmpTot').classList.add('on');
+}
+function printWait(){
+  var g=function(id){return document.getElementById(id).value||'\u3000';};
+  var c='<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Noto Sans KR,sans-serif;padding:40px;}h2{text-align:center;font-size:22px;border-bottom:2px solid #000;padding-bottom:12px;}table{width:100%;border-collapse:collapse;margin-top:16px;}th,td{border:1px solid #000;padding:10px 14px;font-size:13px;}th{background:#f5f5f5;font-weight:700;white-space:nowrap;}.legal{margin-top:20px;padding:14px;border:1px solid #ccc;font-size:12px;line-height:2;}.sign{margin-top:28px;text-align:center;font-size:14px;line-height:3;}</style></head><body><h2>\ucf58\ud14c\uc774\ub108 \ub300\uae30\uc2dc\uac04 \ud655\uc778\uc11c</h2><table><tr><th rowspan="2">\ucd9c\uc785 \uc0ac\uc5c5\uc7a5</th><th>\uba85\uce6d</th><td colspan="3">'+g("wPl")+'</td></tr><tr><th>\uc704\uce58</th><td colspan="3">'+g("wAd")+'</td></tr><tr><th>\ucf58\ud14c\uc774\ub108\ubc88\ud638</th><td>'+g("wCn")+'</td><th>\ucc28\ub7c9\ubc88\ud638</th><td>'+g("wCa")+'</td></tr><tr><th>\ucc28\uc8fc \uc131\uba85</th><td>'+g("wDr")+'</td><th>\uc6b4\uc218\uc0ac \uba85</th><td>'+g("wCo")+'</td></tr><tr><th>\uc785\ucc28\uc694\uccad\uc2dc\uac01(\ud654\uc8fc)</th><td colspan="3">'+g("wRt")+'</td></tr><tr><th>\uc785\ucc28\uc2dc\uac01</th><td colspan="3">'+g("wIn")+'</td></tr><tr><th>\ucd9c\ucc28\uc2dc\uac01</th><td colspan="3">'+g("wOt")+'</td></tr></table><div class="legal">\u300c2026\ub144 \uc801\uc6a9 \ud654\ubb3c\uc790\ub3d9\ucc28 \uc548\uc804\uc6b4\uc784 \uace0\uc2dc\u300d \ubcc4\ud45c 1 24.\ub2e4. \uad00\ub828\ud558\uc5ec \ub300\uae30\uc2dc\uac04 \uc99d\ube59\uc744 \uc704\ud574 \uc704\uc640 \uac19\uc774 \uc0ac\uc5c5\uc7a5\uc5d0 \ucd9c\uc785\ud558\uc600\uc74c\uc744 \ud655\uc778\ud569\ub2c8\ub2e4.</div><div class="sign">'+g("wDt")+'<br>\ud655\uc778\uc790 &nbsp; \uc18c\uc18d: <u style="display:inline-block;min-width:120px;">'+g("wOr")+'</u> &nbsp; \uc131\uba85: <u style="display:inline-block;min-width:80px;">'+g("wNm")+'</u> &nbsp; (\uc11c\uba85 \ub610\ub294 \uc778)</div><scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt></body></html>';
+  var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
+  fd.open();fd.write(c);fd.close();setTimeout(function(){fr.contentWindow.print();},600);
+}
+
+</script>
+</body>
+</html>
