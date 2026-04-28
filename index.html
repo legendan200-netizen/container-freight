@@ -271,99 +271,121 @@ function onPort(){
   chkBtn();
 }
 
-// ── 자체 주소 검색 엔진 ──
+// ── 카카오 주소검색 API (법정동→행정동 자동 변환) ──
+var KAKAO_KEY='6d5a9e0e4fd1eb1507d93f936b3d6a8c';
+var SIDO={'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시','경기':'경기도','강원':'강원특별자치도','충북':'충청북도','충남':'충청남도','전북':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도','제주':'제주특별자치도'};
+
 var searchTimer=null;
 function onAddrInput(v){
   clearTimeout(searchTimer);
-  if(v.trim().length<1){document.getElementById('addrDropdown').style.display='none';return;}
-  searchTimer=setTimeout(function(){doAddrSearch();},300);
+  var dd=document.getElementById('addrDropdown');
+  if(v.trim().length<2){dd.style.display='none';return;}
+  searchTimer=setTimeout(function(){doAddrSearch();},400);
 }
 
 function doAddrSearch(){
   var q=document.getElementById('addrInput').value.trim();
-  if(!q||!CP){return;}
-  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
-  var results=searchDong(q,src);
-  showDropdown(results);
-}
+  if(!q||!CP)return;
+  var dd=document.getElementById('addrDropdown');
+  dd.innerHTML='<div class="addr-no-result">검색 중...</div>';
+  dd.style.display='block';
 
-function normQ(s){
-  return (s||'').replace(/특별시|광역시|특별자치시|특별자치도/g,'')
-    .replace(/도$|시$|군$|구$/,'')
-    .replace(/\s+/g,'').trim();
-}
-function normD(s){
-  return (s||'').replace(/[0-9]+/g,'').replace(/동$|읍$|면$|리$/,'').trim();
-}
-
-function searchDong(q,src){
-  var results=[],seen={};
-  var qTokens=q.trim().split(/\s+/);
-  var q0=qTokens[0], q1=qTokens[1]||'';
-  var q0n=normQ(q0), q1n=normQ(q1);
-
-  for(var sido in src){
-  var sidon=normQ(sido);
-  for(var sg in src[sido]){
-    var sgn=normQ(sg);
-    for(var dong in src[sido][sg]){
-      var dongBase=dong.replace(/[0-9]+/g,'');
-      var dongN=normD(dong);
-      var key=sido+'|'+sg+'|'+dong;
-      if(seen[key])continue;
-      var score=0;
-      var full=sidon+sgn+dongN;
-
-      // 단일 토큰 검색
-      if(qTokens.length===1){
-        // 동/읍/면 직접 매칭
-        if(dong===q||dongBase===q)score=100;
-        else if(dongN===q0n||dongN===normD(q0))score=90;
-        else if(dong.startsWith(q)||dongBase.startsWith(q))score=80;
-        else if(dongN.startsWith(q0n)&&q0n.length>=2)score=70;
-        // 시군구 매칭
-        else if(sg===q||normQ(sg)===q0n)score=60;
-        else if(sg.startsWith(q)||normQ(sg).startsWith(q0n)&&q0n.length>=2)score=50;
-        // 부분 포함
-        else if(dongN.indexOf(q0n)>=0&&q0n.length>=2)score=40;
-        else if(sgn.indexOf(q0n)>=0&&q0n.length>=2)score=30;
-      } else {
-        // 다중 토큰: "평택시 안중" 같은 경우
-        var bothMatch=(sgn.indexOf(q0n)>=0||sidon.indexOf(q0n)>=0)&&(dongN.indexOf(q1n)>=0||sgn.indexOf(q1n)>=0);
-        if(bothMatch&&q0n.length>=1&&q1n.length>=1)score=85;
-        else if(sgn===q0n&&dongN.startsWith(q1n))score=80;
-        else if((sgn.indexOf(q0n)>=0)&&(dongN.indexOf(q1n)>=0)&&q0n.length>=2&&q1n.length>=2)score=70;
-      }
-
-      if(score>0){
-        seen[key]=true;
-        results.push({sido:sido,sg:sg,dong:dong,score:score});
-      }
+  // 카카오 주소검색 API - 법정동/도로명 모두 지원
+  fetch('https://dapi.kakao.com/v2/local/search/address.json?query='+encodeURIComponent(q)+'&analyze_type=similar&size=10',{
+    headers:{'Authorization':'KakaoAK '+KAKAO_KEY}
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var docs=data.documents||[];
+    if(!docs.length){
+      // 키워드 검색으로 폴백
+      return fetch('https://dapi.kakao.com/v2/local/search/keyword.json?query='+encodeURIComponent(q)+'&size=10',{
+        headers:{'Authorization':'KakaoAK '+KAKAO_KEY}
+      }).then(function(r){return r.json();});
     }
+    return {documents:docs, _isAddr:true};
+  })
+  .then(function(data){
+    var docs=data.documents||[];
+    if(!docs.length){
+      showLocalSearch(q); // 자체 DB 검색으로 폴백
+      return;
+    }
+    var results=[];
+    var seen={};
+    docs.forEach(function(doc){
+      var addr=doc.address||doc.road_address||{};
+      var sido1=addr.region_1depth_name||doc.address_name||'';
+      var sg=addr.region_2depth_name||'';
+      var hname=addr.region_3depth_h_name||''; // 행정동명!
+      var bname=addr.region_3depth_name||'';   // 법정동명
+      var sidoFull=SIDO[sido1]||sido1;
+      // 행정동으로 우리 DB 매핑
+      var found=matchDong(sidoFull,sg,hname,bname);
+      if(found){
+        var key=found.sido+'|'+found.sg+'|'+found.dong;
+        if(!seen[key]){
+          seen[key]=true;
+          results.push({sido:found.sido,sg:found.sg,dong:found.dong,
+            label:doc.address_name||doc.place_name||q});
+        }
+      }
+    });
+    if(!results.length){showLocalSearch(q);return;}
+    showDropdown(results);
+  })
+  .catch(function(){showLocalSearch(q);});
+}
+
+function matchDong(sidoFull,sigungu,hname,bname){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  if(!src)return null;
+  function nd(s){return(s||'').replace(/[0-9]+/g,'').replace(/[동읍면리]$/,'').trim();}
+  var fSido=null;
+  for(var s in src){if(s===sidoFull||(sidoFull&&s.indexOf(sidoFull.replace(/특별시|광역시|특별자치시|특별자치도|도$/,''))>=0)){fSido=s;break;}}
+  if(!fSido)return null;
+  var fSg=null;
+  if(src[fSido][sigungu]){fSg=sigungu;}
+  else{var sn=sigungu.replace(/[시군구]$/,'');for(var k in src[fSido]){if(k.replace(/[시군구]$/,'')=== sn){fSg=k;break;}}}
+  if(!fSg)return null;
+  var dD=src[fSido][fSg];
+  var fDong=null;
+  // hname(행정동) 우선
+  if(hname&&dD[hname]){fDong=hname;}
+  if(!fDong&&hname){var h=nd(hname);for(var k in dD){if(nd(k)===h){fDong=k;break;}}}
+  if(!fDong&&hname){var h=nd(hname);for(var k in dD){if(h.length>=2&&nd(k).startsWith(h)){fDong=k;break;}}}
+  // bname(법정동) 폴백
+  if(!fDong&&bname&&dD[bname]){fDong=bname;}
+  if(!fDong&&bname){var b=nd(bname);for(var k in dD){if(nd(k)===b){fDong=k;break;}}}
+  if(!fDong&&bname){var b=nd(bname);for(var k in dD){if(b.length>=2&&nd(k).startsWith(b)){fDong=k;break;}}}
+  return fDong?{sido:fSido,sg:fSg,dong:fDong}:null;
+}
+
+// 자체 DB 검색 (카카오 실패 시 폴백)
+function showLocalSearch(q){
+  var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
+  var results=[],seen={};
+  function nq(s){return(s||'').replace(/특별시|광역시|특별자치시|특별자치도|도$|시$|군$|구$/g,'').replace(/\s/g,'').trim();}
+  function nd(s){return(s||'').replace(/[0-9]+/g,'').replace(/동$|읍$|면$|리$/,'').trim();}
+  var qn=nq(q);
+  for(var sido in src){var sn=nq(sido);for(var sg in src[sido]){var sgn=nq(sg);for(var dong in src[sido][sg]){var dn=nd(dong);var key=sido+'|'+sg+'|'+dong;if(seen[key])continue;var sc=0;if(dong===q||dn===nd(q))sc=10;else if(dn.startsWith(nd(q))&&nd(q).length>=2)sc=8;else if(sg===q||sgn===qn)sc=6;else if(sgn.startsWith(qn)&&qn.length>=2)sc=5;else if(dn.indexOf(qn)>=0&&qn.length>=2)sc=3;else if(sgn.indexOf(qn)>=0&&qn.length>=2)sc=2;if(sc>0){seen[key]=true;results.push({sido:sido,sg:sg,dong:dong,score:sc,label:sido+' '+sg+' '+dong});}}}}
+  results.sort(function(a,b){return b.score-a.score;});
+  if(!results.length){
+    var dd=document.getElementById('addrDropdown');
+    dd.innerHTML='<div class="addr-no-result">검색 결과가 없습니다.<br><small>예: 안중읍, 역삼동, 해운대구, 평택시</small></div>';
+    dd.style.display='block';
+    return;
   }
-  }
-  // 점수 내림차순, 동일 점수면 가나다순
-  results.sort(function(a,b){
-    if(b.score!==a.score)return b.score-a.score;
-    return (a.sido+a.sg+a.dong).localeCompare(b.sido+b.sg+b.dong,'ko');
-  });
-  return results.slice(0,12);
+  showDropdown(results.slice(0,10));
 }
 
 function showDropdown(results){
   var dd=document.getElementById('addrDropdown');
-  if(!results.length){
-    dd.innerHTML='<div class="addr-no-result">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.<br><small>\uc2dc\uad70\uad6c\uba85(\uc608: \ud3c9\ud0dd\uc2dc)\uc774\ub098 \ud589\uc815\ub3d9\uba85(\uc608: \uc548\uc911\uc74d)\uc73c\ub85c \uac80\uc0c9\ud558\uc138\uc694</small></div>';
-    dd.style.display='block';
-    return;
-  }
   var html='';
   results.forEach(function(r){
-    var full=r.sido+' '+r.sg+' '+r.dong;
-    // data-* 속성으로 값 저장 (JS 이스케이프 불필요)
-    html+='<div class="addr-result" data-sido="'+r.sido+'" data-sg="'+r.sg+'" data-dong="'+r.dong+'" data-full="'+full+'" onclick="selectResult(this)">';
+    html+='<div class="addr-result" data-sido="'+r.sido+'" data-sg="'+r.sg+'" data-dong="'+r.dong+'" data-full="'+(r.label||r.sido+' '+r.sg+' '+r.dong)+'" onclick="selectResult(this)">';
     html+='<div class="addr-result-name">'+r.dong+'</div>';
-    html+='<div class="addr-result-sub">'+r.sido+' '+r.sg+'</div>';
+    html+='<div class="addr-result-sub">'+r.sido+' '+r.sg+(r.label&&r.label!==r.sido+' '+r.sg+' '+r.dong?' | '+r.label:'')+'</div>';
     html+='</div>';
   });
   dd.innerHTML=html;
@@ -371,12 +393,11 @@ function showDropdown(results){
 }
 
 function selectResult(el){
-  var sido=el.dataset.sido, sg=el.dataset.sg, dong=el.dataset.dong, full=el.dataset.full;
+  var sido=el.dataset.sido,sg=el.dataset.sg,dong=el.dataset.dong,full=el.dataset.full;
   document.getElementById('addrDropdown').style.display='none';
-  document.getElementById('addrInput').value=full;
+  document.getElementById('addrInput').value=sido+' '+sg+' '+dong;
   applyDong(sido,sg,dong,full);
 }
-
 function clearAddr(){
   document.getElementById('addrInput').value='';
   document.getElementById('addrDropdown').style.display='none';
