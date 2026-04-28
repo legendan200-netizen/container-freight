@@ -365,72 +365,80 @@ function matchDong(sidoFull,sigungu,hname,bname){
   return fDong?{sido:fSido,sg:fSg,dong:fDong}:null;
 }
 
-// 자체 DB 검색 (카카오 실패 시 폴백) + 법정동 인덱스 활용
+// 자체 DB 검색 - LA(법정동→행정동) + 행정동 직접검색
 function showLocalSearch(q){
   var src=isOway&&OMAP[CP]?OD[OMAP[CP]]:D[CP];
   var results=[],seen={};
 
-  // 1단계: 법정동 인덱스(LI)로 검색
-  // 입력에서 숫자/번지 제거 후 법정동명 추출
-  var qClean=q.replace(/[0-9\-]+/g,'').replace(/번지|번$|호$|\s+/g,'').trim();
-  var qParts=qClean.split(/\s+/);
-  
-  // 법정동명 후보들 (뒤에서부터 시도)
-  for(var pi=qParts.length-1;pi>=0;pi--){
-    var legalQ=qParts[pi];
-    if(legalQ.length<2)continue;
-    
-    // LI에서 직접 검색
-    if(typeof LI!=='undefined'&&LI[legalQ]){
-      var liMatches=LI[legalQ];
-      liMatches.forEach(function(m){
-        if(!src[m.sido]||!src[m.sido][m.sg])return;
-        m.dongs.forEach(function(dong){
-          if(!src[m.sido][m.sg][dong])return;
-          var key=m.sido+'|'+m.sg+'|'+dong;
-          if(seen[key])return;
-          seen[key]=true;
-          results.push({
-            sido:m.sido,sg:m.sg,dong:dong,
-            score:m.exact?10:5,
-            label:m.sido+' '+m.sg+' '+dong,
-            isLegal:!m.exact,
-            legalName:legalQ
-          });
-        });
+  // 입력 정제: 번지/숫자/도로명 제거 후 지역명만 추출
+  var qClean=q.replace(/[0-9]+[-\s]*[0-9]*/g,'')
+              .replace(/번지|번$|호$/g,'')
+              .replace(/\s+/g,' ').trim();
+  var qParts=qClean.split(' ').filter(function(p){return p.length>=2;});
+
+  function nq(s){return (s||'').replace(/특별시|광역시|특별자치시|특별자치도|도$|시$|군$|구$/g,'').replace(/\s/g,'').trim();}
+  function nd(s){return (s||'').replace(/[0-9]+/g,'').replace(/동$|읍$|면$|리$/,'').trim();}
+
+  function addResult(sido,sg,dong,score,label){
+    var key=sido+'|'+sg+'|'+dong;
+    if(seen[key])return;
+    if(!src[sido]||!src[sido][sg]||!src[sido][sg][dong])return;
+    seen[key]=true;
+    results.push({sido:sido,sg:sg,dong:dong,score:score,label:label||sido+' '+sg+' '+dong});
+  }
+
+  // 1단계: LA(법정동→행정동 정확 매핑)로 검색
+  if(typeof LA!=='undefined'){
+    for(var pi=0;pi<qParts.length;pi++){
+      var lq=qParts[pi];
+      var laHits=[];
+      // 직접 법정동명으로 검색
+      if(LA[lq]) laHits=LA[lq];
+      // 동/읍/면 붙여서 시도
+      if(!laHits.length) laHits=LA[lq+'\ub3d9']||LA[lq+'\uc74d']||LA[lq+'\uba74']||[];
+
+      laHits.forEach(function(m){
+        // 행정동명이 법정동명과 유사하면 점수 높임 (비전1동 vs 통복동)
+        var sim=nd(m.admin).startsWith(nd(lq))||nd(lq).startsWith(nd(m.admin));
+        var sc=sim?12:9;
+        addResult(m.sido,m.sg,m.admin,sc,m.sido+' '+m.sg+' '+m.admin+' \u00b7 '+lq);
       });
-      if(results.length)break;
-    }
-    
-    // LI에서 부분 매칭
-    if(typeof LI!=='undefined'&&!results.length){
-      for(var lk in LI){
-        if(lk.startsWith(legalQ)||legalQ.startsWith(lk.replace(/동$|읍$|면$|리$/,''))){
-          var liM=LI[lk];
-          liM.forEach(function(m){
-            if(!src[m.sido]||!src[m.sido][m.sg])return;
-            m.dongs.slice(0,5).forEach(function(dong){
-              if(!src[m.sido][m.sg][dong])return;
-              var key=m.sido+'|'+m.sg+'|'+dong;
-              if(!seen[key]){seen[key]=true;results.push({sido:m.sido,sg:m.sg,dong:dong,score:3,label:m.sido+' '+m.sg+' '+dong});}
-            });
-          });
-        }
-      }
     }
   }
 
-  // 2단계: 행정동 직접 검색
-  function nq(s){return(s||'').replace(/특별시|광역시|특별자치시|특별자치도|도$|시$|군$|구$/g,'').replace(/\s/g,'').trim();}
-  function nd(s){return(s||'').replace(/[0-9]+/g,'').replace(/동$|읍$|면$|리$/,'').trim();}
-  var qn=nq(qClean);
-  for(var sido in src){var sn=nq(sido);for(var sg in src[sido]){var sgn=nq(sg);for(var dong in src[sido][sg]){var dn=nd(dong);var key=sido+'|'+sg+'|'+dong;if(seen[key])continue;var sc=0;if(dong===qClean||dn===nd(qClean))sc=9;else if(dn.startsWith(nd(qClean))&&nd(qClean).length>=2)sc=7;else if(sg===qClean||sgn===qn)sc=6;else if(sgn.startsWith(qn)&&qn.length>=2)sc=4;else if(dn.indexOf(qn)>=0&&qn.length>=2)sc=3;if(sc>0){seen[key]=true;results.push({sido:sido,sg:sg,dong:dong,score:sc,label:sido+' '+sg+' '+dong});}}}}
+  // 2단계: 행정동명 직접 검색 (안중읍, 역삼1동 등)
+  for(var sido in src){
+    var sn=nq(sido);
+    for(var sg in src[sido]){
+      var sgn=nq(sg);
+      for(var dong in src[sido][sg]){
+        var dn=nd(dong);
+        var sc=0;
+        // 전체 입력과 매칭
+        if(dong===qClean||dn===nd(qClean))sc=11;
+        else if(dn.startsWith(nd(qClean))&&nd(qClean).length>=2)sc=8;
+        // 시군구 레벨 매칭 (해운대구, 평택시)
+        else if(sg===qClean||sgn===nq(qClean))sc=6;
+        else if(sgn.startsWith(nq(qClean))&&nq(qClean).length>=2)sc=5;
+        // 다중 토큰: "평택시 안중" → 시군구+행정동 조합
+        else if(qParts.length>=2){
+          var hit=qParts.every(function(p){
+            var pn=nq(p),pd=nd(p);
+            return sn.indexOf(pn)>=0||sgn.indexOf(pn)>=0||dn.indexOf(pd)>=0||dn.startsWith(pd)||pd.startsWith(dn);
+          });
+          if(hit)sc=7;
+        }
+        if(sc>0) addResult(sido,sg,dong,sc,sido+' '+sg+' '+dong);
+      }
+    }
+  }
 
   results.sort(function(a,b){return b.score-a.score;});
 
   if(!results.length){
     var dd=document.getElementById('addrDropdown');
-    dd.innerHTML='<div class="addr-no-result">검색 결과가 없습니다.<br><small>예: 안중읍, 역삼동, 해운대구, 평택시</small></div>';
+    dd.innerHTML='<div class="addr-no-result">\uac80\uc0c9 \uacb0\uacfc\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.<br>'
+      +'<small>\uc608: \uc548\uc911\uc74d, \uc5ed\uc0bc\ub3d9, \ud574\uc6b4\ub300\uad6c, \ud3c9\ud0dd\uc2dc, \uc774\ucda9\ub3d9</small></div>';
     dd.style.display='block';
     return;
   }
