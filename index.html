@@ -236,7 +236,6 @@ table.ft{width:100%;border-collapse:collapse;}
           <th style="min-width:150px;">하차지(도착지)</th>
           <th style="min-width:85px;">20FT (원)</th>
           <th style="min-width:85px;">40FT (원)</th>
-          <th style="min-width:85px;">45FT (원)</th>
           <th style="min-width:100px;">REMARK</th>
           <th style="width:32px;"></th>
         </tr></thead>
@@ -716,17 +715,16 @@ function calcCmp(){
 })();
 
 var qRowCnt=0;
-function addQuoteRow(port,dest,f20,f40,f45,rmk){
+function addQuoteRow(port,dest,f20,f40,rmk){
   var tb=document.getElementById('quoteRows');
   var id='qr'+(++qRowCnt);
   var tr=document.createElement('tr');
   tr.id=id;
-  var p=port||'', de=dest||'', v20=f20||'', v40=f40||'', v45=f45||'', vr=rmk||'';
+  var p=port||'', de=dest||'', v40=f40||'', vr=rmk||'';
   tr.innerHTML='<td><input type="text" placeholder="예: 부산신항" value="'+p+'"></td>'
     +'<td><input type="text" placeholder="예: 평택시 안중읍" value="'+de+'"></td>'
     +'<td><input type="text" placeholder="-" value="'+v20+'" style="text-align:right;"></td>'
     +'<td><input type="text" placeholder="-" value="'+v40+'" style="text-align:right;"></td>'
-    +'<td><input type="text" placeholder="-" value="'+v45+'" style="text-align:right;"></td>'
     +'<td><input type="text" placeholder="REMARK" value="'+vr+'"></td>'
     +'<td><button class="del-btn" onclick="document.getElementById(this.closest(\'tr\').id).remove()">&times;</button></td>';
   tb.appendChild(tr);
@@ -744,10 +742,9 @@ function addFromCalc(){
   var qty=parseInt(document.getElementById('qtyI').value)||1;
   var f40=Math.round(row[1+ft]*qty/10)*10;
   var f20=Math.round(row[4+ft]*qty/10)*10;
-  var f45=Math.round(f40*1.125/10)*10;
   var rmk=qty>1?qty+'개':'';
   addQuoteRow(CP,sido+' '+sg+' '+dong,
-    f20.toLocaleString(),f40.toLocaleString(),f45.toLocaleString(),rmk);
+    f20.toLocaleString(),f40.toLocaleString(),rmk);
   document.getElementById('quoteBuilder').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -761,12 +758,11 @@ function printQuote(){
   rows.forEach(function(tr){
     var inp=tr.querySelectorAll('input');
     if(!inp.length)return;
-    var p=inp[0].value,d=inp[1].value,v20=inp[2].value,v40=inp[3].value,v45=inp[4].value,rmk=inp[5].value;
+    var p=inp[0].value,d=inp[1].value,v20=inp[2].value,v40=inp[3].value,rmk=inp[4].value;
     if(!p&&!d)return;
     tRows+='<tr><td>'+p+'</td><td>'+d+'</td>'
       +'<td class="num">'+v20+'</td>'
       +'<td class="num">'+v40+'</td>'
-      +'<td class="num">'+v45+'</td>'
       +'<td>'+rmk+'</td></tr>';
   });
   if(!tRows){alert('견적 항목을 하나 이상 추가해주세요.');return;}
@@ -814,8 +810,7 @@ function printQuote(){
     +'<th>하차지(도착지)</th>'
     +'<th>20FT</th>'
     +'<th>40FT</th>'
-    +'<th>45FT</th>'
-    +'<th>REMARK</th>'
+        +'<th>REMARK</th>'
     +'</tr></thead>'
     +'<tbody>'+tRows+'</tbody>'
     +'</table>'
@@ -1130,7 +1125,6 @@ table.ft{width:100%;border-collapse:collapse;}
           <th style="min-width:150px;">하차지(도착지)</th>
           <th style="min-width:85px;">20FT (원)</th>
           <th style="min-width:85px;">40FT (원)</th>
-          <th style="min-width:85px;">45FT (원)</th>
           <th style="min-width:100px;">REMARK</th>
           <th style="width:32px;"></th>
         </tr></thead>
@@ -1603,7 +1597,7 @@ function addQuoteRow(port,dest,f20,f40,f45,rmk){
   var id='qr'+(++qRowCnt);
   var tr=document.createElement('tr');
   tr.id=id;
-  var p=port||'', de=dest||'', v20=f20||'', v40=f40||'', v45=f45||'', vr=rmk||'';
+  var p=port||'', de=dest||'', v40=f40||'', vr=rmk||'';
   tr.innerHTML='<td><input type="text" placeholder="예: 부산신항" value="'+p+'"></td>'
     +'<td><input type="text" placeholder="예: 평택시 안중읍" value="'+de+'"></td>'
     +'<td><input type="text" placeholder="-" value="'+v20+'" style="text-align:right;"></td>'
@@ -1626,10 +1620,9 @@ function addFromCalc(){
   var qty=parseInt(document.getElementById('qtyI').value)||1;
   var f40=Math.round(row[1+ft]*qty/10)*10;
   var f20=Math.round(row[4+ft]*qty/10)*10;
-  var f45=Math.round(f40*1.125/10)*10;
   var rmk=qty>1?qty+'개':'';
   addQuoteRow(CP,sido+' '+sg+' '+dong,
-    f20.toLocaleString(),f40.toLocaleString(),f45.toLocaleString(),rmk);
+    f20.toLocaleString(),f40.toLocaleString(),rmk);
   document.getElementById('quoteBuilder').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
