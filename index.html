@@ -755,77 +755,77 @@ function printQuote(){
   var qDate=document.getElementById('qDate').value||'';
   var qTo=document.getElementById('qTo').value||'';
   var qFrom=document.getElementById('qFrom').value||'';
-  var qTitle=document.getElementById('qTitle').value||'수출·입 컨테이너 내륙운송료 견적의 건';
+  var qTitle=document.getElementById('qTitle').value||'수출·입 콘테이너 내륙운송료 견적의 건';
   var rows=document.querySelectorAll('#quoteRows tr');
   var tRows='';
   rows.forEach(function(tr){
     var inp=tr.querySelectorAll('input');
     if(!inp.length)return;
-    tRows+='<tr>'
-      +'<td>'+inp[0].value+'</td>'
-      +'<td>'+inp[1].value+'</td>'
-      +'<td style="text-align:right;">'+inp[2].value+'</td>'
-      +'<td style="text-align:right;">'+inp[3].value+'</td>'
-      +'<td style="text-align:right;">'+inp[4].value+'</td>'
-      +'<td>'+inp[5].value+'</td>'
-      +'</tr>';
+    var p=inp[0].value,d=inp[1].value,v20=inp[2].value,v40=inp[3].value,v45=inp[4].value,rmk=inp[5].value;
+    if(!p&&!d)return;
+    tRows+='<tr><td>'+p+'</td><td>'+d+'</td>'
+      +'<td class="num">'+v20+'</td>'
+      +'<td class="num">'+v40+'</td>'
+      +'<td class="num">'+v45+'</td>'
+      +'<td>'+rmk+'</td></tr>';
   });
   if(!tRows){alert('견적 항목을 하나 이상 추가해주세요.');return;}
 
-  var css='*{box-sizing:border-box;margin:0;padding:0;}'
-    +'body{font-family:Noto Sans KR,sans-serif;font-size:13px;color:#111;padding:28px 36px;}'
-    +'.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e3a5f;padding-bottom:12px;margin-bottom:14px;}'
-    +'.co{font-size:18px;font-weight:700;color:#1e3a5f;}'
-    +'.ci{font-size:11px;color:#555;line-height:1.8;text-align:right;}'
-    +'.dt{font-size:22px;font-weight:700;text-align:center;letter-spacing:6px;color:#1e3a5f;margin:14px 0;}'
-    +'table.mt{width:100%;border-collapse:collapse;margin-bottom:14px;}'
+  var c='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0;}'
+    +'body{font-family:"Noto Sans KR",sans-serif;font-size:13px;color:#111;padding:32px 40px;}'
+    +'.hdr{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:10px;border-bottom:2.5px solid #1e3a5f;margin-bottom:14px;}'
+    +'.co{font-size:20px;font-weight:700;color:#1e3a5f;letter-spacing:-0.5px;}'
+    +'.ci{font-size:11px;color:#666;line-height:1.8;text-align:right;}'
+    +'.title{font-size:22px;font-weight:700;text-align:center;letter-spacing:6px;color:#1e3a5f;margin:14px 0 16px;}'
+    +'table.mt{width:100%;border-collapse:collapse;margin-bottom:16px;}'
     +'table.mt td{padding:7px 12px;font-size:13px;border:1px solid #ccc;}'
-    +'table.mt td.lb{background:#f7f9fc;font-weight:700;color:#1e3a5f;width:70px;text-align:center;}'
-    +'.intro{font-size:13px;line-height:2.2;margin-bottom:14px;}'
-    +'.st{font-size:14px;font-weight:700;text-align:center;margin:12px 0 4px;letter-spacing:4px;}'
-    +'.un{text-align:right;font-size:11px;color:#888;margin-bottom:4px;}'
-    +'table.mn{width:100%;border-collapse:collapse;margin-bottom:12px;}'
-    +'table.mn th{background:#1e3a5f;color:#fff;padding:9px 10px;font-size:12px;text-align:center;border:1px solid #1e3a5f;}'
-    +'table.mn td{padding:9px 10px;border:1px solid #ccc;font-size:13px;}'
-    +'table.mn tr:nth-child(even) td{background:#f7f9fc;}'
-    +'.rb{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:12px 16px;font-size:12px;line-height:2.2;margin:10px 0;}'
-    +'.ft{margin-top:20px;text-align:center;font-size:13px;border-top:1px solid #ccc;padding-top:14px;}'
-    +'@media print{body{padding:10px 16px;}}';
-
-  var body='<div class="hdr">'
+    +'table.mt .lb{background:#f5f7fa;font-weight:700;color:#1e3a5f;width:68px;text-align:center;white-space:nowrap;}'
+    +'.intro{font-size:13px;line-height:2;margin-bottom:14px;color:#333;}'
+    +'.stitle{font-size:13px;font-weight:700;text-align:center;margin:12px 0 4px;letter-spacing:4px;color:#333;}'
+    +'.unit{text-align:right;font-size:11px;color:#888;margin-bottom:4px;}'
+    +'table.main{width:100%;border-collapse:collapse;margin-bottom:14px;}'
+    +'table.main th{background:#1e3a5f;color:#fff;padding:10px 10px;font-size:12px;text-align:center;border:1px solid #1e3a5f;font-weight:700;}'
+    +'table.main td{padding:10px 10px;border:1px solid #ccc;font-size:13px;}'
+    +'table.main td.num{text-align:right;font-weight:500;}'
+    +'table.main tr:nth-child(even) td{background:#f9fafb;}'
+    +'.note{font-size:12px;line-height:2;color:#444;border-top:1px solid #ddd;padding-top:10px;margin-bottom:18px;}'
+    +'.foot{text-align:center;font-size:13px;border-top:1px solid #ccc;padding-top:14px;color:#333;}'
+    +'@media print{body{padding:15px 20px;}}'
+    +'</style></head><body>'
+    +'<div class="hdr">'
     +'<div class="co">국양로지텍(주)</div>'
-    +'<div class="ci">서울특별시 중구 세종대로 74, 삼정빌딩 903호<br>전화 031-681-5014</div>'
+    +'<div class="ci">서울특별시 중구 세종대로 74, 삼정빌딩 903호 &nbsp;|&nbsp; 전화 031-681-5014</div>'
     +'</div>'
-    +'<div class="dt">견 &nbsp; 적 &nbsp; 서</div>'
+    +'<div class="title">견 &nbsp; 적 &nbsp; 서</div>'
     +'<table class="mt">'
     +'<tr><td class="lb">일&nbsp;자</td><td>'+qDate+'</td><td class="lb">수&nbsp;신</td><td>'+qTo+'</td></tr>'
     +'<tr><td class="lb">발&nbsp;신</td><td>국양로지텍(주) / '+qFrom+'</td><td class="lb">제&nbsp;목</td><td>'+qTitle+'</td></tr>'
     +'</table>'
     +'<div class="intro">1. 귀사의 일익 번창함을 기원합니다.<br>'
-    +'2. 귀사의 화물을 안전하고 신속한 운송을 위해 최선을 다 할 것을 약속 드리며,<br>'
-    +'&nbsp;&nbsp;&nbsp;&nbsp;문의하신 수출·입 컨테이너 운송 견적을 아래와 같이 송부하오니 확인하여 주시기 바랍니다.</div>'
-    +'<div class="st">ᅳ 아 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 래 ᅳ</div>'
-    +'<div class="un">(단위 : 원)</div>'
-    +'<table class="mn">'
+    +'2. 문의하신 수출·입 콘테이너 내륙운송료 견적을 아래와 같이 송부하오니 확인하여 주시기 바랍니다.</div>'
+    +'<div class="stitle">╌ 아 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 래 ╌</div>'
+    +'<div class="unit">(단위 : 원)</div>'
+    +'<table class="main">'
     +'<thead><tr>'
-    +'<th>상차지(입항항)</th><th>하차지(도착지)</th>'
-    +'<th>20FT 운반비</th><th>40FT 운반비</th><th>45FT 운반비</th><th>REMARK</th>'
+    +'<th>상차지(입항항)</th>'
+    +'<th>하차지(도착지)</th>'
+    +'<th>20FT</th>'
+    +'<th>40FT</th>'
+    +'<th>45FT</th>'
+    +'<th>REMARK</th>'
     +'</tr></thead>'
     +'<tbody>'+tRows+'</tbody>'
     +'</table>'
-    +'<div class="rb">'
-    +'<p>1. 부가세 별도</p>'
-    +'<p>2. 내품 무게가 40FT 23톤, 20FT 20톤을 초과할 때부터 매 1톤마다 해당구간 운임의 10%씩을 할증하여 적용합니다.</p>'
-    +'<p>&nbsp;&nbsp;예시1: 40FT 23톤 초과 24톤 이하 10%, 24톤 초과 25톤 이하 20% 할증 적용</p>'
-    +'<p>&nbsp;&nbsp;예시2: 20FT 20톤 초과 21톤 이하 10%, 21톤 초과 22톤 이하 20% 할증 적용</p>'
-    +'<p>3. 중량할증 이외의 할증은 사무실 문의 부탁드리겠습니다. 감사합니다.</p>'
+    +'<div class="note">'
+    +'1. 부가세 별도<br>'
+    +'2. 상기 운반비는 기본 운반비 기준이며, 운송 조건에 따른 할증(중량 초과, 특수 콘테이너 등)은 「2026년 적용 화물자동차 안전운임 고시」 부대조항에 의거 실제 운송 조건에 따라 별도 적용됩니다.'
     +'</div>'
-    +'<div class="ft">국양로지텍(주) &nbsp;&nbsp; 대표이사 &nbsp;&nbsp; 최 준 호 &nbsp;&nbsp; (직인생략)</div>';
-
-  var c='<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">'
-    +'<style>'+css+'</style></head><body>'+body
-    +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt></body></html>';
+    +'<div class="foot">국양로지텍(주) &nbsp;&nbsp; 대표이사 &nbsp;&nbsp; 최 준 호 &nbsp;&nbsp; (직인생략)</div>'
+    +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt>'
+    +'</body></html>';
 
   var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
   fd.open();fd.write(c);fd.close();
