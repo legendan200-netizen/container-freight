@@ -298,7 +298,7 @@ table.ft{width:100%;border-collapse:collapse;}
 // D, OD, DT는 data.js에서 로드됨
 var INCH=['\uc778\ucc9c\uc2e0\ud56d','\uc778\ucc9c\ud56d','\uc778\ucc9c\uad6d\uc81c\uc5ec\uac1d\ubd80\ub450'];
 var PTAEK=['\ud3c9\ud0dd\ud56d'];
-var OMAP={'\ubd80\uc0b0\uc2e0\ud56d':'\ubd80\uc0b0\uc2e0\ud56d\u21941\uc758\uc655ICD','\ubd80\uc0b0\ubd81\ud56d':'\ubd80\uc0b0\ubd81\ud56d\u21941\uc758\uc655ICD','\uad11\uc591\ud56d':'\uad11\uc591\ud56d\u21941\uc758\uc655ICD'};
+var OMAP={"\ubd80\uc0b0\uc2e0\ud56d": "\ubd80\uc0b0\uc2e0\ud56d\u2194\uc758\uc655ICD", "\ubd80\uc0b0\ubd81\ud56d": "\ubd80\uc0b0\ubd81\ud56d\u2194\uc758\uc655ICD", "\uad11\uc591\ud56d": "\uad11\uc591\ud56d\u2194\uc758\uc655ICD"};
 var FN=['\uc548\uc804\uc704\ud0c1\uc6b4\uc784','\uc6b4\uc218\uc0ac\uc5c5\uc790 \uac04 \uc6b4\uc784','\uc548\uc804\uc6b4\uc1a1\uc6b4\uc784'];
 var CT='40ft',CP=null,isOway=false,retInch=false,sSur=[],isCmb=false;
 var dCT='40ft',cmpCT='40ft',cmpM='port',cmpF={rail:false,thc:false,doc:false,etc:false};
@@ -1183,13 +1183,7 @@ var lastAddr='';
 
 function goTab(id,el){document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});el.classList.add('on');document.getElementById('p-'+id).classList.add('on');}
 
-(function(){
-  var ps=document.getElementById('portSel'),cp=document.getElementById('cmpPort');
-  Object.keys(D).sort().forEach(function(p){
-    var lbl=p+(INCH.includes(p)?' (\ud560\uc99d+20%\ud3ec\ud568)':PTAEK.includes(p)?' (\ud560\uc99d+18%\ud3ec\ud568)':'');
-    ps.add(new Option(lbl,p));cp.add(new Option(p,p));
-  });
-})();
+
 
 function onPort(){
   CP=document.getElementById('portSel').value||null;
