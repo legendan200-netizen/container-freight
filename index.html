@@ -827,9 +827,9 @@ function printQuote(){
     +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt>'
     +'</body></html>';
 
-  var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
-  fd.open();fd.write(c);fd.close();
-  setTimeout(function(){fr.contentWindow.print();},700);
+  var w=window.open('','_blank');
+  w.document.write(c);
+  w.document.close();
 }
 
 
@@ -885,9 +885,9 @@ function printWait(){
     +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt>'
     +'</body></html>';
 
-  var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
-  fd.open();fd.write(c);fd.close();
-  setTimeout(function(){fr.contentWindow.print();},700);
+  var w=window.open('','_blank');
+  w.document.write(c);
+  w.document.close();
 }
 
 </script>
@@ -1709,17 +1709,18 @@ function printQuote(){
     +'<style>'+css+'</style></head><body>'+body
     +'<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt></body></html>';
 
-  var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
-  fd.open();fd.write(c);fd.close();
-  setTimeout(function(){fr.contentWindow.print();},700);
+  var w=window.open('','_blank');
+  w.document.write(c);
+  w.document.close();
 }
 
 
 function printWait(){
   var g=function(id){return document.getElementById(id).value||'\u3000';};
   var c='<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Noto Sans KR,sans-serif;padding:40px;}h2{text-align:center;font-size:22px;border-bottom:2px solid #000;padding-bottom:12px;}table{width:100%;border-collapse:collapse;margin-top:16px;}th,td{border:1px solid #000;padding:10px 14px;font-size:13px;}th{background:#f5f5f5;font-weight:700;white-space:nowrap;}.legal{margin-top:20px;padding:14px;border:1px solid #ccc;font-size:12px;line-height:2;}.sign{margin-top:28px;text-align:center;font-size:14px;line-height:3;}</style></head><body><h2>\ucf58\ud14c\uc774\ub108 \ub300\uae30\uc2dc\uac04 \ud655\uc778\uc11c</h2><table><tr><th rowspan="2">\ucd9c\uc785 \uc0ac\uc5c5\uc7a5</th><th>\uba85\uce6d</th><td colspan="3">'+g("wPl")+'</td></tr><tr><th>\uc704\uce58</th><td colspan="3">'+g("wAd")+'</td></tr><tr><th>\ucf58\ud14c\uc774\ub108\ubc88\ud638</th><td>'+g("wCn")+'</td><th>\ucc28\ub7c9\ubc88\ud638</th><td>'+g("wCa")+'</td></tr><tr><th>\ucc28\uc8fc \uc131\uba85</th><td>'+g("wDr")+'</td><th>\uc6b4\uc218\uc0ac \uba85</th><td>'+g("wCo")+'</td></tr><tr><th>\uc785\ucc28\uc694\uccad\uc2dc\uac01(\ud654\uc8fc)</th><td colspan="3">'+g("wRt")+'</td></tr><tr><th>\uc785\ucc28\uc2dc\uac01</th><td colspan="3">'+g("wIn")+'</td></tr><tr><th>\ucd9c\ucc28\uc2dc\uac01</th><td colspan="3">'+g("wOt")+'</td></tr></table><div class="legal">\u300c2026\ub144 \uc801\uc6a9 \ud654\ubb3c\uc790\ub3d9\ucc28 \uc548\uc804\uc6b4\uc784 \uace0\uc2dc\u300d \ubcc4\ud45c 1 24.\ub2e4. \uad00\ub828\ud558\uc5ec \ub300\uae30\uc2dc\uac04 \uc99d\ube59\uc744 \uc704\ud574 \uc704\uc640 \uac19\uc774 \uc0ac\uc5c5\uc7a5\uc5d0 \ucd9c\uc785\ud558\uc600\uc74c\uc744 \ud655\uc778\ud569\ub2c8\ub2e4.</div><div class="sign">'+g("wDt")+'<br>\ud655\uc778\uc790 &nbsp; \uc18c\uc18d: <u style="display:inline-block;min-width:120px;">'+g("wOr")+'</u> &nbsp; \uc131\uba85: <u style="display:inline-block;min-width:80px;">'+g("wNm")+'</u> &nbsp; (\uc11c\uba85 \ub610\ub294 \uc778)</div><scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt></body></html>';
-  var fr=document.getElementById('pf'),fd=fr.contentDocument||fr.contentWindow.document;
-  fd.open();fd.write(c);fd.close();setTimeout(function(){fr.contentWindow.print();},600);
+  var w=window.open('','_blank');
+  w.document.write(c);
+  w.document.close();
 }
 
 </script>
